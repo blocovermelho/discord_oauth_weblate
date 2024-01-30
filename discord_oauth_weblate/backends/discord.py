@@ -27,14 +27,12 @@ class DiscordOAuth2(BaseOAuth2):
         auth_header = {"Authorization": "Bearer %s" % access_token}
         return self.get_json(url, headers=auth_header)
 
-    def has_joined_guild(self, access_token, guild_id, *args, **kwargs):
+    def has_joined_guild(self, access_token, guild_id):
         url = "https://%s/api/users/@me/guilds/%s/member" % (self.HOSTNAME, guild_id)
         auth_header = {"Authorization": "Bearer %s" % access_token}
-        return self.get_json(url, headers=auth_header)
+        json = self.get_json(url, headers=auth_header)
+        return json.get("joined_at") is not None
 
     def auth_allowed(self, response, details):
-        print(response)
-        raise NotImplementedError()
-
-
-
+        token = response.get("access_token")
+        return self.has_joined_guild(token, "1038487852662661223")
