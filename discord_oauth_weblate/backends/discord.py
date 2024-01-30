@@ -1,5 +1,5 @@
 """Melhor que o teu, *muito* melhor que o teu"""
-
+from requests.exceptions import HTTPError
 from social_core.backends.oauth import BaseOAuth2
 
 
@@ -30,8 +30,12 @@ class DiscordOAuth2(BaseOAuth2):
     def has_joined_guild(self, access_token, guild_id):
         url = "https://%s/api/users/@me/guilds/%s/member" % (self.HOSTNAME, guild_id)
         auth_header = {"Authorization": "Bearer %s" % access_token}
-        json = self.get_json(url, headers=auth_header)
-        return json.get("joined_at") is not None
+        try:
+            self.get_json(url, headers=auth_header)
+        except HTTPError:
+            return False
+
+        return True
 
     def auth_allowed(self, response, details):
         token = response.get("access_token")
